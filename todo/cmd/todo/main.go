@@ -7,9 +7,13 @@ import (
 	"todo"
 )
 
-const todoFileName = ".todo.json"
+var todoFileName = ".todo.json"
 
 func main() {
+	task := flag.String("task", "", "Task o be included in the ToDo list")
+	list := flag.Bool("list", false, "List all tasks")
+	complete := flag.Int("complete", 0, "Item to be completed")
+
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"%s tool. Developed for The Pragmatic Bookshelf\n", os.Args[0])
@@ -17,10 +21,12 @@ func main() {
 		fmt.Fprintln(flag.CommandLine.Output(), "Usage information:")
 		flag.PrintDefaults()
 	}
-	task := flag.String("task", "", "Task o be included in the ToDo list")
-	list := flag.Bool("list", false, "List all tasks")
-	complete := flag.Int("complete", 0, "Item to be completed")
+
 	flag.Parse()
+
+	if os.Getenv("TODO_FILENAME") != "" {
+		todoFileName = os.Getenv("TODO_FILENAME")
+	}
 
 	l := &todo.List{}
 	if err := l.Get(todoFileName); err != nil {
@@ -30,11 +36,7 @@ func main() {
 
 	switch {
 	case *list:
-		for _, item := range *l {
-			if !item.Done {
-				fmt.Println(item.Task)
-			}
-		}
+		fmt.Print(l)
 	case *complete > 0:
 		if err := l.Complete(*complete); err != nil {
 			fmt.Fprintln(os.Stderr, err)
