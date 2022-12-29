@@ -101,7 +101,7 @@ func TestRunDelExtension(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var buffer bytes.Buffer
 			var logBuffer bytes.Buffer
-
+			// テスト用のログ出力先
 			tc.cfg.wLog = &logBuffer
 
 			tempDir, cleanup := createTempDir(t, map[string]int{
@@ -125,6 +125,7 @@ func TestRunDelExtension(t *testing.T) {
 				t.Errorf("Expected %d files left, got %d instead\n", tc.nNoDelete, len(filesLeft))
 			}
 
+			// 削除ログ情報行数を比較
 			expLogLines := tc.nDelete + 1
 			lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
 			if len(lines) != expLogLines {

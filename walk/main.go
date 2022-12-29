@@ -32,6 +32,7 @@ func main() {
 		err error
 	)
 
+	// logフラグが渡された場合R/W権限でファイルを開く
 	if *logFile != "" {
 		f, err = os.OpenFile(*logFile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
