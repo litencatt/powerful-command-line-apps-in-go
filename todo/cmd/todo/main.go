@@ -76,7 +76,7 @@ func getTask(r io.Reader, args ...string) (string, error) {
 		return "", err
 	}
 	if len(s.Text()) == 0 {
-		return "", fmt.Errorf("Task cannot be blank")
+		return "", fmt.Errorf("task cannot be blank")
 	}
 	return s.Text(), nil
 }
