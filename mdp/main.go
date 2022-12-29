@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -66,6 +67,7 @@ func run(filename string, out io.Writer, skipPreview bool) error {
 	if skipPreview {
 		return nil
 	}
+	defer os.Remove(outName)
 	return preview(outName)
 }
 
@@ -109,7 +111,12 @@ func preview(fname string) error {
 		return err
 	}
 
+	// Open the file using default program
 	// e.g.
 	//   $ /usr/bin/open foo.md.html
-	return exec.Command(cPath, cParams...).Run()
+	err = exec.Command(cPath, cParams...).Run()
+
+	// ブラウザに対してファイル削除前にファイルを開くための時間を与える
+	time.Sleep(2 * time.Second)
+	return err
 }
