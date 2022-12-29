@@ -67,9 +67,12 @@ func main() {
 }
 
 func getTask(r io.Reader, args ...string) (string, error) {
+	// コマンド引数でタスクが与えられていればそちらを優先して返す
 	if len(args) > 0 {
 		return strings.Join(args, " "), nil
 	}
+
+	// 標準入力が与えられていればその標準入力をタスクとして返す
 	s := bufio.NewScanner(r)
 	s.Scan()
 	if err := s.Err(); err != nil {
