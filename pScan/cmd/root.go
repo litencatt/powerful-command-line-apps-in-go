@@ -48,6 +48,8 @@ func init() {
 
 	rootCmd.PersistentFlags().StringP("hosts-file", "f", "pScan.hosts", "pScan hosts file")
 
+	viper.BindPFlag("hosts-file", rootCmd.PersistentFlags().Lookup("hosts-file"))
+
 	versionTemplate := `{{printf "%s: %s - version %s\n" .Name .Short .Version}}`
 	rootCmd.SetVersionTemplate(versionTemplate)
 }
