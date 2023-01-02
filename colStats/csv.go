@@ -25,17 +25,22 @@ func avg(data []float64) float64 {
 // テスト時にはファイルを渡さなくて済むようにio.Readerを渡せるようにする
 func csv2float(r io.Reader, column int) ([]float64, error) {
 	cr := csv.NewReader(r)
-	column--
+	// スライスの再利用フラグを設定して使い回すことでメモリ使用量削減
+	cr.ReuseRecord = true
 
-	// 文字列データとして全てreadされる
-	allData, err := cr.ReadAll()
-	if err != nil {
-		return nil, fmt.Errorf("Cannot read data from file: %w", err)
-	}
+	column--
 
 	var data []float64
 
-	for i, row := range allData {
+	for i := 0; ; i++ {
+		row, err := cr.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Cannot read data from file: %w", err)
+		}
+
 		if i == 0 {
 			continue
 		}
