@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"testing"
+	"testing/iotest"
 )
 
 func TestOperations(t *testing.T) {
@@ -32,5 +36,87 @@ func TestOperations(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestCSV2Float(t *testing.T) {
+	csvData := `IP Address,Requests,Response Time
+192.168.0.199,2056,236
+192.168.0.88,899,220
+192.168.0.199,3054,226
+192.168.0.100,4133,218
+192.168.0.199,950,238
+`
+	testCases := []struct {
+		name   string
+		col    int
+		exp    []float64
+		expErr error
+		r      io.Reader
+	}{
+		{
+			name:   "Column2",
+			col:    2,
+			exp:    []float64{2056, 899, 3054, 4133, 950},
+			expErr: nil,
+			r:      bytes.NewBufferString(csvData),
+		},
+		{
+			name:   "Column3",
+			col:    3,
+			exp:    []float64{236, 220, 226, 218, 238},
+			expErr: nil,
+			r:      bytes.NewBufferString(csvData),
+		},
+		{
+			name:   "FailRead",
+			col:    1,
+			exp:    nil,
+			expErr: iotest.ErrTimeout,
+			// 読み込み時にタイムアウトエラーを返す設定
+			r: iotest.TimeoutReader(bytes.NewReader([]byte{0})),
+		},
+		{
+			name:   "FailedNotNumber",
+			col:    1,
+			exp:    nil,
+			expErr: ErrNotNumber,
+			r:      bytes.NewBufferString(csvData),
+		},
+		{
+			name:   "FailedInvalidColumn",
+			col:    4,
+			exp:    nil,
+			expErr: ErrInvalidColumn,
+			r:      bytes.NewBufferString(csvData),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res, err := csv2float(tc.r, tc.col)
+			if tc.expErr != nil {
+				if err == nil {
+					t.Errorf("Expected error. Got nil instead")
+				}
+				// エラー文字列を比較するのではなくerror自体を比較することで
+				// 文字列変更時などにも対応した保守性の高いテストとなる
+				if !errors.Is(err, tc.expErr) {
+					t.Errorf("Expected error %q, got %q instead", tc.expErr, err)
+				}
+				// ここはエラーを期待するテスト時に入ってるく処理なので
+				// returnし残りのチェックをskipする
+				return
+			}
+			if err != nil {
+				t.Errorf("Unexpected error: %q", err)
+			}
+
+			for i, exp := range tc.exp {
+				if res[i] != exp {
+					t.Errorf("Expected %g, got %g instead", exp, res[i])
+				}
+			}
+		})
 	}
 }
