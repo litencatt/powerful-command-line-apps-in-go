@@ -9,4 +9,5 @@ use (
   ./goci
   ./pScan
   ./apis/todoServer
+  ./sample_codes/apis/todoServer.v1
 )
