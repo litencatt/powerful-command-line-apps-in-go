@@ -15,6 +15,16 @@ var (
 	ErrInvalidData = errors.New("invalid data")
 )
 
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		replyError(w, r, http.StatusNotFound, "")
+		return
+	}
+
+	content := "There's an API here"
+	replyTextContent(w, r, http.StatusOK, content)
+}
+
 func todoRouter(todoFile string, l sync.Locker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		list := &todo.List{}
@@ -123,16 +133,6 @@ func addHandler(w http.ResponseWriter, r *http.Request, list *todo.List, todoFil
 	}
 
 	replyTextContent(w, r, http.StatusCreated, "")
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		replyError(w, r, http.StatusNotFound, "")
-		return
-	}
-
-	content := "There's an API here"
-	replyTextContent(w, r, http.StatusOK, content)
 }
 
 func validateID(path string, list *todo.List) (int, error) {
